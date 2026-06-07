@@ -1,0 +1,40 @@
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/joho/godotenv"
+
+	"todo-app/internals/database"
+	"todo-app/internals/handlers"
+)
+
+func main() {
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(".env file not found")
+	}
+
+	db, err := database.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	log.Println("Database connected successfully")
+
+	todoHandler := handlers.NewTodoHandler(db)
+
+	http.HandleFunc("/todos", todoHandler.GetTodos)
+	http.HandleFunc("/todos/create", todoHandler.CreateTodo)
+	http.HandleFunc("/todos/update", todoHandler.UpdateTodo)
+	http.HandleFunc("/todos/delete", todoHandler.DeleteTodo)
+
+	log.Println("Server started on :8080")
+
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal(err)
+	}
+}
