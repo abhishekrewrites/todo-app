@@ -25,6 +25,15 @@ func main() {
 
 	log.Println("Database connected successfully")
 
+	// -----****Auth****-----
+
+	authHandler := handlers.NewAuthHandler(db)
+
+	http.HandleFunc("/register", authHandler.Register)
+	http.HandleFunc("/login", authHandler.Login)
+
+	// -----****Todos****-----
+
 	todoHandler := handlers.NewTodoHandler(db)
 
 	http.HandleFunc("/todos", todoHandler.GetTodos)
