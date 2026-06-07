@@ -39,13 +39,17 @@ func (h *TodoHandler) GetTodos(
 
 	offset := (page - 1) * limit
 
+	search := r.URL.Query().Get("search")
+
 	rows, err := h.DB.Query(
 		`
-		SELECT id, title, completed, created_at
-		FROM todos
-		ORDER BY id
-		LIMIT $1 OFFSET $2
-		`,
+	SELECT id, title, completed, created_at
+	FROM todos
+	WHERE title ILIKE '%' || $1 || '%'
+	ORDER BY id
+	LIMIT $2 OFFSET $3
+	`,
+		search,
 		limit,
 		offset,
 	)
@@ -99,9 +103,11 @@ func (h *TodoHandler) GetTodos(
 
 	err = h.DB.QueryRow(
 		`
-		SELECT COUNT(*)
-		FROM todos
-		`,
+	SELECT COUNT(*)
+	FROM todos
+	WHERE title ILIKE '%' || $1 || '%'
+	`,
+		search,
 	).Scan(&total)
 
 	if err != nil {
@@ -176,8 +182,6 @@ func (h *TodoHandler) CreateTodo(
 	)
 }
 
-
-
 func (h *TodoHandler) UpdateTodo(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -224,7 +228,6 @@ func (h *TodoHandler) UpdateTodo(
 	)
 }
 
-
 func (h *TodoHandler) DeleteTodo(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -268,5 +271,3 @@ func (h *TodoHandler) DeleteTodo(
 		},
 	)
 }
-
-
